@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #84fab0, #8fd3f4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+            width: 320px;
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+        h2 {
+            color: #333;
+            font-size: 22px;
+        }
+        .input-group {
+            margin: 12px 0;
+            text-align: left;
+            opacity: 0;
+            animation: slideIn 0.8s ease-in-out forwards;
+        }
+        label {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: 0.3s ease-in-out;
+        }
+        input:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s ease-in-out;
+            animation: slideIn 1s ease-in-out forwards;
+        }
+        button:hover {
+            background-color: #218838;
+            transform: scale(1.05);
+        }
+        .result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 5px;
+            display: none;
+            background-color: #fff3cd;
+            color: #856404;
+            font-weight: bold;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>BMI Calculator</h2>
+        <div class="input-group">
+            <label for="weight">Weight (kg):</label>
+            <input type="number" id="weight">
+        </div>
+        <div class="input-group">
+            <label for="height">Height (cm):</label>
+            <input type="number" id="height">
+        </div>
+        <button onclick="calculateBMI()">Calculate</button>
+        <div id="output" class="result"></div>
+    </div>
+
+    <script>
+        function calculateBMI() {
+            let weight = document.getElementById('weight').value;
+            let height = document.getElementById('height').value;
+
+            if (!weight || !height) {
+                alert("Please enter valid values.");
+                return;
+            }
+
+            let bmiValue = (weight / ((height / 100) ** 2)).toFixed(2);
+            let feedback = "";
+
+            if (bmiValue < 18.5) feedback = "Underweight";
+            else if (bmiValue < 25) feedback = "Normal weight";
+            else if (bmiValue < 30) feedback = "Overweight";
+            else feedback = "Obesity";
+
+            let output = document.getElementById('output');
+            output.innerHTML = `<p>Your BMI: <strong>${bmiValue}</strong></p><p>${feedback}</p>`;
+            output.style.display = "block";
+            output.style.animation = "fadeIn 1s ease-in-out";
+        }
+    </script>
+</body>
+</html>

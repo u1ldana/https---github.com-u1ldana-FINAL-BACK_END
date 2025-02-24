@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App with Yandex Maps</title>
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f7fa;
+            color: #333;
+        }
+        
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            max-width: 1200px;
+        }
+
+        .weather-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 2px solid #eee;
+        }
+
+        .weather-header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .form-group input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .form-group button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .form-group button:hover {
+            background-color: #218838;
+        }
+
+        /* Map container styling */
+        #weatherMap {
+            height: 400px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Weather information styling */
+        .weather-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .weather-info h2 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .weather-icon {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .weather-details {
+            margin-bottom: 20px;
+        }
+
+        .exchange-rates,
+        .joke {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .exchange-rates p,
+        .joke p {
+            font-size: 16px;
+        }
+
+        /* Error message styling */
+        .error-message {
+            color: #e74c3c;
+            background: #fde8e7;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="weather-header">
+        <h1>Weather App</h1>
+        <a href="/" class="btn">Back to Home</a>
+    </div>
+
+    <form id="weatherForm">
+        <div class="form-group">
+            <input type="text" id="city" placeholder="Enter city" required>
+            <button type="submit" class="btn">Get Weather</button>
+        </div>
+    </form>
+
+    <div id="errorMessage" class="error-message"></div>
+    <div id="weatherMap"></div>
+    <div id="weatherInfo" class="weather-info"></div>
+</div>
+
+<!-- Yandex Maps API Script -->
+<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=YOUR_YANDEX_API_KEY" type="text/javascript"></script>
+
+<script>
+    const weatherForm = document.getElementById('weatherForm');
+    const weatherInfo = document.getElementById('weatherInfo');
+    const errorMessage = document.getElementById('errorMessage');
+    let map;
+
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        weatherInfo.style.display = 'none';
+    }
+
+    function hideError() {
+        errorMessage.style.display = 'none';
+    }
+
+    // Initialize Yandex Map
+    function initMap(lat = 51.1801, lng = 71.446) {
+        if (map) {
+            map.destroy();
+        }
+
+        map = new ymaps.Map("weatherMap", {
+            center: [lat, lng],
+            zoom: 10
+        });
+
+        const placemark = new ymaps.Placemark([lat, lng], {
+            balloonContent: 'Weather Info: Loading...',
+        });
+
+        map.geoObjects.add(placemark);
+    }
+
+    // Fetch weather data
+    async function getWeather(city) {
+        try {
+            hideError();
+            weatherInfo.style.display = 'none';
+
+            const response = await fetch(`/weather/data?city=${encodeURIComponent(city)}`);
+            const data = await response.json();
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            // Update map with new coordinates
+            const [lat, lon] = data.coordinates;
+            initMap(lat, lon);
+
+            // Update weather information display
+            weatherInfo.innerHTML = `
+                <h2>
+                    <img src="http://openweathermap.org/img/wn/${data.icon}.png" class="weather-icon" alt="Weather icon">
+                    ${city}, ${data.country || 'KZ'}
+                </h2>
+                <div class="weather-details">
+                    <p><strong>Temperature:</strong> ${data.temperature}°C</p>
+                    <p><strong>Feels like:</strong> ${data.feels_like}°C</p>
+                    <p><strong>Description:</strong> ${data.description}</p>
+                    <p><strong>Coordinates:</strong> [${data.coordinates.join(', ')}]</p>
+                </div>
+                <div class="exchange-rates">
+                    <h3>Exchange Rates</h3>
+                    <p>1 USD = ${data.rates.EUR} EUR</p>
+                    <p>1 USD = ${data.rates.KZT} KZT</p>
+                    <p>1 USD = ${data.rates.RUB} RUB</p>
+                </div>
+                <div class="joke">
+                    <h3>Random Joke</h3>
+                    <p>${data.joke}</p>
+                </div>
+            `;
+            weatherInfo.style.display = 'block';
+        } catch (error) {
+            console.error('Error:', error);
+            showError(error.message || 'Failed to get weather data. Please try again.');
+        }
+    }
+
+    // Form submission handler
+    weatherForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const city = document.getElementById('city').value.trim();
+        if (city) {
+            await getWeather(city);
+        }
+    });
+
+    // Initialize map when page loads
+    ymaps.ready(initMap);
+</script>
+</body>
+</html>

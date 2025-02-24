@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Sender</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        /* Header styling */
+        .email-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .email-header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #4CAF50;
+        }
+
+        .email-header .btn {
+            text-decoration: none;
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: #fff;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .email-header .btn:hover {
+            background-color: #45a049;
+        }
+
+    
+        .email-form {
+            margin-top: 20px;
+        }
+
+        .email-form .form-group {
+            margin-bottom: 15px;
+        }
+
+        .email-form label {
+            font-size: 1rem;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .email-form input,
+        .email-form textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .email-form textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Submit button styling */
+        .email-form button {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.2rem;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .email-form button:hover {
+            background-color: #45a049;
+        }
+
+        /* Status message styling */
+        #status {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="email-header">
+            <h1>Email Sender</h1>
+            <a href="/" class="btn">Back to Home</a>
+        </div>
+
+        <div class="email-form">
+            <form id="emailForm">
+                <div class="form-group">
+                    <label for="to">To:</label>
+                    <input type="email" id="to" name="to" required>
+                </div>
+                <div class="form-group">
+                    <label for="subject">Subject:</label>
+                    <input type="text" id="subject" name="subject" required>
+                </div>
+                <div class="form-group">
+                    <label for="message">Message:</label>
+                    <textarea id="message" name="message" required></textarea>
+                </div>
+                <button type="submit">Send Email</button>
+            </form>
+        </div>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('emailForm');
+        const status = document.getElementById('status');
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            status.textContent = 'Sending...';
+
+            const data = {
+                to: form.to.value,
+                subject: form.subject.value,
+                message: form.message.value
+            };
+
+            try {
+                const res = await fetch('/email/send', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                if (res.ok) {
+                    form.reset();
+                    status.textContent = 'Email sent successfully!';
+                    status.style.color = 'green';
+                } else {
+                    throw new Error('Failed to send');
+                }
+            } catch (err) {
+                status.textContent = 'Failed to send email';
+                status.style.color = 'red';
+            }
+        };
+    </script>
+</body>
+</html>

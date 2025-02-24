@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .qr-header h1 {
+            margin-bottom: 10px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 15px;
+            margin-top: 10px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .qr-form {
+            margin-top: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #2ecc71;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #27ae60;
+        }
+        .qr-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        #qrImage {
+            max-width: 300px;
+            margin-top: 20px;
+            display: none;
+        }
+        .download-btn {
+            display: none;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background: #e67e22;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .download-btn:hover {
+            background: #d35400;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="qr-header">
+            <h1>QR Code Generator</h1>
+            <a href="/" class="btn">Back to Home</a>
+        </div>
+
+        <div class="qr-form">
+            <form id="qrForm">
+                <div class="form-group">
+                    <label for="url">Enter URL:</label>
+                    <input type="url" id="url" name="url" required 
+                           placeholder="https://example.com">
+                </div>
+                <button type="submit">Generate QR Code</button>
+            </form>
+        </div>
+
+        <div class="qr-container">
+            <img id="qrImage">
+            <a id="downloadBtn" class="btn download-btn" download="qrcode.png">
+                Download QR Code
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('qrForm');
+        const qrImage = document.getElementById('qrImage');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('url').value;
+
+            try {
+                const response = await fetch('/qrcode/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const imageUrl = URL.createObjectURL(blob);
+                    
+                    qrImage.src = imageUrl;
+                    qrImage.style.display = 'block';
+                    
+                    downloadBtn.href = imageUrl;
+                    downloadBtn.style.display = 'inline-block';
+                } else {
+                    throw new Error('Failed to generate QR code');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to generate QR code. Please try again.');
+            }
+        };
+    </script>
+</body>
+</html>

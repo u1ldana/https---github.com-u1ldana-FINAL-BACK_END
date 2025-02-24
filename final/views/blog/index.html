@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blogging Platform</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .wrapper {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .blog-section {
+            margin-top: 20px;
+        }
+        .post {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+        .meta {
+            font-size: 12px;
+            color: #666;
+        }
+        .delete-btn {
+            background: #dc3545;
+            margin-top: 10px;
+        }
+        .delete-btn:hover {
+            background: #b52b3a;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <h2>New Blog Post</h2>
+        <form id="postForm">
+            <div class="input-group">
+                <input type="text" id="postTitle" placeholder="Enter Title" required>
+            </div>
+            <div class="input-group">
+                <textarea id="postContent" placeholder="Write your content here..." required></textarea>
+            </div>
+            <button type="submit">Publish</button>
+        </form>
+        <div class="blog-section" id="postList">
+            <p>Loading posts...</p>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", fetchPosts);
+
+        async function fetchPosts() {
+            const postList = document.getElementById("postList");
+            postList.innerHTML = "<p>Loading posts...</p>";
+            try {
+                const res = await fetch("/blog/posts");
+                const posts = await res.json();
+                if (!posts.length) {
+                    postList.innerHTML = "<p>No posts available.</p>";
+                    return;
+                }
+                postList.innerHTML = posts.map(post => `
+                    <div class="post">
+                        <h3>${post.title}</h3>
+                        <p>${post.body}</p>
+                        <div class="meta">By: ${post.author || "Unknown"} | ${new Date(post.createdAt).toLocaleString()}</div>
+                        <button class="delete-btn" onclick="removePost('${post._id}')">Delete</button>
+                    </div>
+                `).join("");
+            } catch (error) {
+                postList.innerHTML = "<p>Error loading posts.</p>";
+            }
+        }
+
+        document.getElementById("postForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            try {
+                await fetch("/blog/posts", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        title: document.getElementById("postTitle").value,
+                        body: document.getElementById("postContent").value
+                    })
+                });
+                document.getElementById("postForm").reset();
+                fetchPosts();
+            } catch (error) {
+                alert("Error publishing post.");
+            }
+        });
+
+        async function removePost(id) {
+            if (!confirm("Delete this post?")) return;
+            try {
+                await fetch(`/blog/posts/${id}`, { method: "DELETE" });
+                fetchPosts();
+            } catch (error) {
+                alert("Failed to delete post.");
+            }
+        }
+    </script>
+</body>
+</html>
